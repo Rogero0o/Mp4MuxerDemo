@@ -52,7 +52,7 @@ class MainActivity : Activity(), SurfaceHolder.Callback, OnPreviewFrameResult, C
 
         mBtnRecord = findViewById<View>(R.id.main_record_btn) as Button
         mBtnRecord!!.setOnClickListener {
-            val mMuxerUtils = MediaMuxerUtils.getMuxerRunnableInstance()
+            val mMuxerUtils = MediaMuxerUtils.muxerRunnableInstance
             if (!isRecording) {
                 mMuxerUtils.startMuxerThread(mCamManager!!.cameraDirection)
                 mBtnRecord!!.text = "停止录像"
@@ -152,7 +152,7 @@ class MainActivity : Activity(), SurfaceHolder.Callback, OnPreviewFrameResult, C
         mCamManager!!.cameraIntance?.addCallbackBuffer(data)
         if (isPreviewCatch) {
             Log.d("Tag", "---isPreviewCatch---:$data")
-            MediaMuxerUtils.getMuxerRunnableInstance().addVideoFrameData(data)
+            MediaMuxerUtils.muxerRunnableInstance.addVideoFrameData(data)
             isPreviewCatch = false
         }
     }
