@@ -1,4 +1,5 @@
 apply plugin: 'com.android.application'
+apply plugin: 'kotlin-android'
 
 android {
     compileSdkVersion 28
@@ -28,4 +29,9 @@ dependencies {
     testImplementation 'junit:junit:4.12'
     implementation 'org.jcodec:jcodec-android:0.1.9'
     implementation 'com.google.code.gson:gson:2.6.2'
+    implementation 'com.lovedise:permissiongen:0.0.6'
+    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
+}
+repositories {
+    mavenCentral()
 }

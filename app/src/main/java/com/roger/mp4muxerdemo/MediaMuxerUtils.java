@@ -66,7 +66,7 @@ public class MediaMuxerUtils {
                                 if (data.trackIndex == TRACK_VIDEO) {
                                     track = videoTrack;
                                     Log.d(TAG, "---写入视频数据---");
-                                    MainActivity.sequenceEncoderMp4.encodeNativeFrame(data.byteBuf);
+                                    MainActivity.Companion.getSequenceEncoderMp4().encodeNativeFrame(data.byteBuf);
                                 }
                             } catch (Exception e) {
                                 Log.e(TAG, "写入数据到混合器失败，track=" + track);
@@ -143,7 +143,7 @@ public class MediaMuxerUtils {
 
     public void stopMuxerThread() {
         try {
-            MainActivity.sequenceEncoderMp4.finish();
+            MainActivity.Companion.getSequenceEncoderMp4().finish();
         } catch (Exception e) {
             e.printStackTrace();
         }
