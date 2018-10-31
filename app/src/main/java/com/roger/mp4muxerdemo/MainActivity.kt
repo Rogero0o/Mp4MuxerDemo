@@ -8,6 +8,7 @@ import android.os.Environment
 import android.os.Handler
 import android.os.Message
 import android.util.Log
+import android.view.OrientationEventListener
 import android.view.SurfaceHolder
 import android.view.SurfaceView
 import android.view.View
@@ -38,12 +39,21 @@ class MainActivity : Activity(), SurfaceHolder.Callback, OnPreviewFrameResult, C
             .absolutePath + File.separator + "Mp4MuxerDemo"
 
     private var isPreviewCatch: Boolean = false
+    private var isPhoneHorizontal: Boolean = false
+
+    private lateinit var orientationListener:MyOrientationListener
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         mCamManager = CameraUtils.getCamManagerInstance(this@MainActivity)
         mSurfaceView = findViewById<View>(R.id.main_record_surface) as SurfaceView
+
+
+        orientationListener = MyOrientationListener()
+        if (orientationListener.canDetectOrientation()) {
+            orientationListener.enable()
+        }
 
         mSurfaceView!!.holder.addCallback(this)
         mSurfaceView!!.setOnClickListener {
@@ -54,7 +64,7 @@ class MainActivity : Activity(), SurfaceHolder.Callback, OnPreviewFrameResult, C
         mBtnRecord!!.setOnClickListener {
             val mMuxerUtils = MediaMuxerUtils.muxerRunnableInstance
             if (!isRecording) {
-                mMuxerUtils.startMuxerThread(mCamManager!!.cameraDirection)
+                mMuxerUtils.startMuxerThread(mCamManager!!.cameraDirection, isPhoneHorizontal)
                 mBtnRecord!!.text = "停止录像"
             } else {
                 //停止录像并生成mp4文件
@@ -83,9 +93,11 @@ class MainActivity : Activity(), SurfaceHolder.Callback, OnPreviewFrameResult, C
                 e.printStackTrace()
             }
         }
+    }
 
-
-
+    override fun onDestroy() {
+        orientationListener.disable()
+        super.onDestroy()
     }
 
     private fun init() {
@@ -160,6 +172,16 @@ class MainActivity : Activity(), SurfaceHolder.Callback, OnPreviewFrameResult, C
     override fun onFocusResult(result: Boolean) {
         if (result) {
             Toast.makeText(this@MainActivity, "对焦成功", Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    inner class MyOrientationListener : OrientationEventListener(this){
+        override fun onOrientationChanged(orientation: Int) {
+            if (orientation == OrientationEventListener.ORIENTATION_UNKNOWN) {
+                return
+            }
+            var newOrientation = ((orientation + 45) / 90 * 90) % 360
+            isPhoneHorizontal = newOrientation == 90 || newOrientation == 270
         }
     }
 

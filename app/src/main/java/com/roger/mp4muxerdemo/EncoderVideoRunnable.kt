@@ -9,6 +9,8 @@ import android.os.Build
 import android.util.Log
 
 import com.roger.mp4muxerdemo.utils.CameraUtils
+import com.roger.mp4muxerdemo.utils.CameraUtils.Companion.PREVIEW_HEIGHT
+import com.roger.mp4muxerdemo.utils.CameraUtils.Companion.PREVIEW_WIDTH
 
 import java.io.IOException
 import java.lang.ref.WeakReference
@@ -18,7 +20,7 @@ import java.util.Vector
 class EncoderVideoRunnable(// MP4混合器
         private val muxerRunnableRf: WeakReference<MediaMuxerUtils>) : Runnable {
     // 正常垂直方向拍摄
-    private val isPhoneHorizontal = true
+    var isPhoneHorizontal = false
     // 硬编码器
     private var mVideoEncodec: MediaCodec? = null
     private var mColorFormat: Int = 0
@@ -51,7 +53,6 @@ class EncoderVideoRunnable(// MP4混合器
     init {
         frameBytes = Vector()
         mFrameData = ByteArray(CameraUtils.PREVIEW_WIDTH * CameraUtils.PREVIEW_HEIGHT * 3 / 2)
-        initMediaFormat()
     }
 
     private fun initMediaFormat() {
@@ -82,6 +83,9 @@ class EncoderVideoRunnable(// MP4混合器
     }
 
     private fun startCodec() {
+        if (mFormat == null) {
+            initMediaFormat()
+        }
         frameBytes!!.clear()
         isExit = false
         if (mVideoEncodec != null) {
@@ -103,7 +107,11 @@ class EncoderVideoRunnable(// MP4混合器
     }
 
     fun addData(yuvData: ByteArray) {
-        frameBytes?.add(yuvData)
+        var data = yuvData
+        if (!isPhoneHorizontal) {
+            data = EncoderVideoRunnable.rotateYUV420Degree90(yuvData, PREVIEW_WIDTH, PREVIEW_HEIGHT)
+        }
+        frameBytes?.add(data)
     }
 
     override fun run() {
@@ -284,6 +292,30 @@ class EncoderVideoRunnable(// MP4混合器
                 i420bytes[i + 1] = nv21bytes[i]
                 i += 2
             }
+        }
+
+        fun rotateYUV420Degree90(data: ByteArray, imageWidth: Int, imageHeight: Int): ByteArray {
+            val yuv = ByteArray(imageWidth * imageHeight * 3 / 2)
+            var i = 0
+            for (x in 0 until imageWidth) {
+                for (y in imageHeight - 1 downTo 0) {
+                    yuv[i] = data[y * imageWidth + x]
+                    i++
+                }
+            }
+            i = imageWidth * imageHeight * 3 / 2 - 1
+            var x = imageWidth - 1
+            while (x > 0) {
+                for (y in 0 until imageHeight / 2) {
+                    yuv[i] = data[imageWidth * imageHeight + y * imageWidth + x]
+                    i--
+                    yuv[i] = data[imageWidth * imageHeight + y * imageWidth
+                            + (x - 1)]
+                    i--
+                }
+                x = x - 2
+            }
+            return yuv
         }
     }
 }

@@ -18,12 +18,14 @@ class MediaMuxerUtils private constructor() {
     private var mMuxerThread: Thread? = null
     private var mVideoThread: Thread? = null
     private var isFrontCamera: Boolean = false
+    private var isHorizontal: Boolean = false
 
     private fun initMuxer() {
         mMuxerDatas = Vector()
         videoRunnable = EncoderVideoRunnable(WeakReference(this))
         mVideoThread = Thread(videoRunnable)
         videoRunnable!!.isFrontCamera = isFrontCamera
+        videoRunnable!!.isPhoneHorizontal = isHorizontal
         mVideoThread!!.start()
         isExit = false
     }
@@ -120,8 +122,9 @@ class MediaMuxerUtils private constructor() {
         }
     }
 
-    fun startMuxerThread(isFrontCamera: Boolean) {
+    fun startMuxerThread(isFrontCamera: Boolean,isHorizontal:Boolean) {
         this.isFrontCamera = isFrontCamera
+        this.isHorizontal = isHorizontal
         if (mMuxerThread == null) {
             synchronized(this@MediaMuxerUtils) {
                 mMuxerThread = Thread(MediaMuxerRunnable())
