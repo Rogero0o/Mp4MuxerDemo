@@ -17,31 +17,14 @@ import java.io.File
 import java.io.FileInputStream
 import java.io.IOException
 import java.io.RandomAccessFile
-import java.lang.reflect.Field
 import java.nio.ByteBuffer
 import java.util.ArrayList
 
 import org.jcodec.codecs.h264.H264Utils.createMOVSampleEntry
 
-/**
- * projectName: 	    Jcodec2
- * packageName:	        com.luoxiang.org.jcodec
- * className:	        SequenceEncoderMp4
- * author:	            Luoxiang
- * time:	            2017/1/6	17:40
- * desc:	            TODO
- *
- *
- * svnVersion:	        $Rev
- * upDateAuthor:	    Vincent
- * upDate:	            2017/1/6
- * upDateDesc:	        TODO
- */
 
 class SequenceEncoderMp4
-//    public void encodeImage(Bitmap bi) throws IOException {
-//        encodeNativeFrame(org.jcodec.scale.BitmapUtil.fromBitmap(bi));
-//    }
+
 
 
 @Throws(IOException::class)

@@ -77,8 +77,7 @@ constructor(protected var out: SeekableByteChannel, ftyp: FileTypeBox, reWrite: 
         }
 
     @Throws(IOException::class)
-    @JvmOverloads constructor(output: SeekableByteChannel, brand: Brand = Brand.MP4, reWrite: Boolean = true) : this(output, brand.fileTypeBox, reWrite) {
-    }
+    @JvmOverloads constructor(output: SeekableByteChannel, brand: Brand = Brand.MP4, reWrite: Boolean = true) : this(output, brand.fileTypeBox, reWrite)
 
     init {
         if (reWrite) {

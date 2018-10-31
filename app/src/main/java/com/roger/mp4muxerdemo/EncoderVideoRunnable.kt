@@ -200,45 +200,6 @@ class EncoderVideoRunnable(// MP4混合器
                         MediaMuxerUtils.TRACK_VIDEO, clone(outputBuffer),
                         mBufferInfo))
 
-                // 根据NALU类型判断帧类型
-                //                int type = outputBuffer.get(4) & 0x1F;
-                //                Log.d(TAG, "------还有数据---->" + type);
-                //                if (type == 7 || type == 8) {
-                //                    Log.e(TAG, "------PPS、SPS帧(非图像数据)，忽略-------");
-                //                    if (mMuxerUtils != null && mMuxerUtils.isMuxerStarted()) {
-                //                        mMuxerUtils.addMuxerData(new MediaMuxerUtils.MuxerData(
-                //                                MediaMuxerUtils.TRACK_VIDEO, outputBuffer,
-                //                                mBufferInfo));
-                //                        prevPresentationTimes = mBufferInfo.presentationTimeUs;
-                //                        isAddKeyFrame = true;
-                //                        Log.e(TAG, "----------->添加关键帧到混合器");
-                //                    }
-                ////					mBufferInfo.size = 0;
-                //                } else if (type == 5) {
-                //                    // 录像时，第1秒画面会静止，这是由于音视轨没有完全被添加
-                //                    // Muxer没有启动
-                //                    Log.e(TAG, "------I帧(关键帧)-------");
-                //                    if (mMuxerUtils != null && mMuxerUtils.isMuxerStarted()) {
-                //                        mMuxerUtils.addMuxerData(new MediaMuxerUtils.MuxerData(
-                //                                MediaMuxerUtils.TRACK_VIDEO, outputBuffer,
-                //                                mBufferInfo));
-                //                        prevPresentationTimes = mBufferInfo.presentationTimeUs;
-                //                        isAddKeyFrame = true;
-                //                        Log.e(TAG, "----------->添加关键帧到混合器");
-                //                    }
-                //                } else {
-                //                    if (isAddKeyFrame) {
-                //                        Log.d(TAG, "------非I帧(type=1)，添加到混合器-------");
-                //                        if (mMuxerUtils != null && mMuxerUtils.isMuxerStarted()) {
-                //                            mMuxerUtils.addMuxerData(new MediaMuxerUtils.MuxerData(
-                //                                    MediaMuxerUtils.TRACK_VIDEO, outputBuffer,
-                //                                    mBufferInfo));
-                //                            prevPresentationTimes = mBufferInfo.presentationTimeUs;
-                //                            Log.d(TAG, "------添加到混合器");
-                //                        }
-                //                    }
-                //                }
-                // 处理结束，释放输出缓存区资源
                 mVideoEncodec!!.releaseOutputBuffer(outputBufferIndex, false)
             }
         } while (outputBufferIndex >= 0)
