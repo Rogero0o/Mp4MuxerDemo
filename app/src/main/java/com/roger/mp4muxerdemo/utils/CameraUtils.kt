@@ -35,14 +35,14 @@ class CameraUtils private constructor() {
         }
     }
 
-    private//获得手机方向
+    //获得手机方向
     //得到手机的角度
     //旋转90度
     //旋转0度
     //旋转270
     //旋转180
     //分别计算前后置摄像头需要旋转的角度
-    val previewRotateDegree: Int
+    private val previewRotateDegree: Int
         get() {
             var phoneDegree = 0
             var result = 0
