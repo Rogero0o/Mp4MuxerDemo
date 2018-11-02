@@ -87,8 +87,8 @@ class MainActivity : Activity(), SurfaceHolder.Callback, OnPreviewFrameResult, C
 
         findViewById<View>(R.id.main_shengcheng_btn).setOnClickListener {
             try {
-                sequenceEncoderMp4!!.setFrameNo(ListCache.getInstance(this@MainActivity)!!.lastIndex.toInt())
-                sequenceEncoderMp4!!.finish()
+                SequenceEncoderMp4.instance!!.setFrameNo(ListCache.getInstance(this@MainActivity)!!.lastIndex.toInt())
+                SequenceEncoderMp4.instance!!.finish()
             } catch (e: IOException) {
                 e.printStackTrace()
             }
@@ -106,7 +106,7 @@ class MainActivity : Activity(), SurfaceHolder.Callback, OnPreviewFrameResult, C
             out!!.parentFile.mkdirs()
         }
         try {
-            sequenceEncoderMp4 = SequenceEncoderMp4(out!!, this)
+            SequenceEncoderMp4.instance = SequenceEncoderMp4(out!!, this)
         } catch (e: IOException) {
             e.printStackTrace()
         }
@@ -183,9 +183,5 @@ class MainActivity : Activity(), SurfaceHolder.Callback, OnPreviewFrameResult, C
             var newOrientation = ((orientation + 45) / 90 * 90) % 360
             isPhoneHorizontal = newOrientation == 90 || newOrientation == 270
         }
-    }
-
-    companion object {
-        var sequenceEncoderMp4: SequenceEncoderMp4? = null
     }
 }

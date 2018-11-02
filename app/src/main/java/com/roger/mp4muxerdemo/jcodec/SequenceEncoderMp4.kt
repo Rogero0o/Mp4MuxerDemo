@@ -160,7 +160,7 @@ constructor(out: File, private val context: Context) {
     }
 
     companion object {
-
+        var instance: SequenceEncoderMp4? = null
 
         fun wipePS(`in`: ByteBuffer, spsList: MutableList<ByteBuffer>?, ppsList: MutableList<ByteBuffer>?) {
             val dup = `in`.duplicate()

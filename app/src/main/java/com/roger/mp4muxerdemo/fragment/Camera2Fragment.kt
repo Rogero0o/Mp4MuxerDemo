@@ -17,7 +17,6 @@
 package com.roger.mp4muxerdemo.fragment
 
 import android.Manifest
-import android.app.AlertDialog
 import android.content.Context
 import android.content.pm.PackageManager
 import android.content.res.Configuration
@@ -36,9 +35,7 @@ import android.hardware.camera2.CaptureRequest
 import android.hardware.camera2.CaptureResult
 import android.hardware.camera2.TotalCaptureResult
 import android.media.ImageReader
-import android.os.Bundle
-import android.os.Handler
-import android.os.HandlerThread
+import android.os.*
 import android.support.v4.app.ActivityCompat
 import android.support.v4.app.Fragment
 import android.support.v4.content.ContextCompat
@@ -51,10 +48,14 @@ import android.view.TextureView
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
+import com.roger.mp4muxerdemo.MediaMuxerUtils
 import com.roger.mp4muxerdemo.R
+import com.roger.mp4muxerdemo.jcodec.ListCache
 import com.roger.mp4muxerdemo.jcodec.SequenceEncoderMp4
 import com.roger.mp4muxerdemo.utils.*
+import kotlinx.android.synthetic.main.fragment_camera2_basic.*
 import java.io.File
+import java.io.IOException
 import java.util.Arrays
 import java.util.Collections
 import java.util.concurrent.Semaphore
@@ -259,8 +260,8 @@ class Camera2Fragment : Fragment(), View.OnClickListener,
     ): View? = inflater.inflate(R.layout.fragment_camera2_basic, container, false)
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        view.findViewById<View>(R.id.picture).setOnClickListener(this)
-        view.findViewById<View>(R.id.info).setOnClickListener(this)
+        view.findViewById<View>(R.id.start).setOnClickListener(this)
+        view.findViewById<View>(R.id.finish).setOnClickListener(this)
         textureView = view.findViewById(R.id.texture)
     }
 
@@ -335,10 +336,10 @@ class Camera2Fragment : Fragment(), View.OnClickListener,
 
                 // For still image captures, we use the largest available size.
                 val largest = Collections.max(
-                        Arrays.asList(*map.getOutputSizes(ImageFormat.NV21)),
+                        Arrays.asList(*map.getOutputSizes(ImageFormat.YUV_420_888)),
                         CompareSizesByArea())
                 imageReader = ImageReader.newInstance(largest.width, largest.height,
-                        ImageFormat.NV21, /*maxImages*/ 2).apply {
+                        ImageFormat.YUV_420_888, /*maxImages*/ 2).apply {
                     setOnImageAvailableListener(onImageAvailableListener, backgroundHandler)
                 }
 
@@ -431,6 +432,7 @@ class Camera2Fragment : Fragment(), View.OnClickListener,
             requestCameraPermission()
             return
         }
+        init()
         setUpCameraOutputs(width, height)
         configureTransform(width, height)
         val manager = activity?.getSystemService(Context.CAMERA_SERVICE) as CameraManager
@@ -685,16 +687,27 @@ class Camera2Fragment : Fragment(), View.OnClickListener,
 
     }
 
+    private var isRecording: Boolean = false
+
     override fun onClick(view: View) {
         when (view.id) {
-            R.id.picture -> lockFocus()
-            R.id.info -> {
-                if (activity != null) {
-                    AlertDialog.Builder(activity)
-                            .setMessage(R.string.intro_message)
-                            .setPositiveButton(android.R.string.ok, null)
-                            .show()
+            R.id.start ->{
+                val mMuxerUtils = MediaMuxerUtils.muxerRunnableInstance
+                if (!isRecording) {
+                    mHandler!!.sendEmptyMessageDelayed(0, 1000)
+                    mMuxerUtils.startMuxerThread(false, false)
+                    start.text = "停止录像"
+                } else {
+                    //停止录像并生成mp4文件
+                    mHandler!!.removeMessages(0)
+                    mMuxerUtils.stopMuxerThread()
+                    start.text = "开始录像"
                 }
+                isRecording = !isRecording
+            }
+            R.id.finish -> {
+                SequenceEncoderMp4.instance!!.setFrameNo(ListCache.getInstance(activity!!).lastIndex.toInt())
+                SequenceEncoderMp4.instance!!.finish()
             }
         }
     }
@@ -706,9 +719,29 @@ class Camera2Fragment : Fragment(), View.OnClickListener,
         }
     }
 
-    companion object {
 
-        var sequenceEncoderMp4: SequenceEncoderMp4? = null
+    private fun init() {
+        out = File(FILE_FOLDER, "jcodec_enc.mp4")
+        if (!out!!.parentFile.exists()) {
+            out!!.parentFile.mkdirs()
+        }
+        try {
+            SequenceEncoderMp4.instance = SequenceEncoderMp4(out!!, activity!!)
+        } catch (e: IOException) {
+            e.printStackTrace()
+        }
+
+        mHandler = object : Handler() {
+            override fun handleMessage(msg: Message) {
+                super.handleMessage(msg)
+                lockFocus()
+                mHandler!!.sendEmptyMessageDelayed(0, 1000)
+            }
+        }
+
+    }
+
+    companion object {
 
         /**
          * Conversion from screen rotation to JPEG orientation.
@@ -819,4 +852,11 @@ class Camera2Fragment : Fragment(), View.OnClickListener,
 
         @JvmStatic fun newInstance(): Camera2Fragment = Camera2Fragment()
     }
+
+    private var out: File? = null
+    private var mHandler: Handler? = null
+    private var FILE_FOLDER = Environment.getExternalStorageDirectory()
+            .absolutePath + File.separator + "Mp4MuxerDemo"
+
+
 }

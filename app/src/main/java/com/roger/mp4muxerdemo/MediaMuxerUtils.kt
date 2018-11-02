@@ -2,6 +2,7 @@ package com.roger.mp4muxerdemo
 
 import android.media.MediaCodec
 import android.util.Log
+import com.roger.mp4muxerdemo.jcodec.SequenceEncoderMp4
 
 import java.lang.ref.WeakReference
 import java.nio.ByteBuffer
@@ -55,7 +56,7 @@ class MediaMuxerUtils private constructor() {
                                 if (data.trackIndex == TRACK_VIDEO) {
                                     track = videoTrack
                                     Log.d(TAG, "---写入视频数据---")
-                                    MainActivity.sequenceEncoderMp4!!.encodeNativeFrame(data.byteBuf)
+                                    SequenceEncoderMp4.instance!!.encodeNativeFrame(data.byteBuf)
                                 }
                             } catch (e: Exception) {
                                 Log.e(TAG, "写入数据到混合器失败，track=$track")
@@ -135,7 +136,7 @@ class MediaMuxerUtils private constructor() {
 
     fun stopMuxerThread() {
         try {
-            MainActivity.sequenceEncoderMp4!!.finish()
+            SequenceEncoderMp4.instance!!.finish()
         } catch (e: Exception) {
             e.printStackTrace()
         }
