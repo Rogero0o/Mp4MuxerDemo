@@ -56,6 +56,7 @@ import com.roger.mp4muxerdemo.utils.*
 import kotlinx.android.synthetic.main.fragment_camera2_basic.*
 import java.io.File
 import java.io.IOException
+import java.nio.ByteBuffer
 import java.util.Arrays
 import java.util.Collections
 import java.util.concurrent.Semaphore
@@ -159,7 +160,7 @@ class Camera2Fragment : Fragment(), View.OnClickListener,
      * still image is ready to be saved.
      */
     private val onImageAvailableListener = ImageReader.OnImageAvailableListener {
-        backgroundHandler?.post(ImageSaver(it.acquireNextImage(), file))
+        backgroundHandler?.post(ImageSaver(it.acquireNextImage(), this))
     }
 
     /**
@@ -338,7 +339,7 @@ class Camera2Fragment : Fragment(), View.OnClickListener,
                 val largest = Collections.max(
                         Arrays.asList(*map.getOutputSizes(ImageFormat.YUV_420_888)),
                         CompareSizesByArea())
-                imageReader = ImageReader.newInstance(largest.width, largest.height,
+                imageReader = ImageReader.newInstance(CameraUtils.PREVIEW_WIDTH, CameraUtils.PREVIEW_HEIGHT,
                         ImageFormat.YUV_420_888, /*maxImages*/ 2).apply {
                     setOnImageAvailableListener(onImageAvailableListener, backgroundHandler)
                 }
@@ -648,8 +649,7 @@ class Camera2Fragment : Fragment(), View.OnClickListener,
                 override fun onCaptureCompleted(session: CameraCaptureSession,
                         request: CaptureRequest,
                         result: TotalCaptureResult) {
-                    Toast.makeText(activity!!, "Saved: $file", Toast.LENGTH_SHORT).show()
-                    Log.d(TAG, file.toString())
+                    Log.d(TAG, "onCaptureCompleted")
                     unlockFocus()
                 }
             }
@@ -742,6 +742,7 @@ class Camera2Fragment : Fragment(), View.OnClickListener,
     }
 
     companion object {
+
 
         /**
          * Conversion from screen rotation to JPEG orientation.
@@ -851,7 +852,17 @@ class Camera2Fragment : Fragment(), View.OnClickListener,
         }
 
         @JvmStatic fun newInstance(): Camera2Fragment = Camera2Fragment()
+
+
+   }
+
+    init {
+        System.loadLibrary("native-yuv-to-buffer-lib")
     }
+
+    external fun yuvToBuffer(y: ByteBuffer, u: ByteBuffer, v: ByteBuffer, yPixelStride: Int, yRowStride: Int,
+                             uPixelStride: Int, uRowStride: Int, vPixelStride: Int, vRowStride: Int, imgWidth: Int, imgHeight: Int): ByteArray
+
 
     private var out: File? = null
     private var mHandler: Handler? = null
